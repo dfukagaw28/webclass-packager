@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WebClass 教材パッケージ作成</title>
+<style>
+:root {
+  --bg: #f6f6f3; --surface: #ffffff; --text: #1d1d1b; --muted: #6b6b66; --line: #dcdcd5;
+  --accent: #2f5d8a; --accent-text: #ffffff; --err: #b3261e; --err-bg: #fbeceb; --warn: #8a5a00; --warn-bg: #fdf4e3; --ok: #2e6b3a;
+  --drop: #eef3f8;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #171716; --surface: #21211f; --text: #e9e9e4; --muted: #a0a09a; --line: #3a3a36;
+    --accent: #8fb6dd; --accent-text: #10202f; --err: #f2b8b5; --err-bg: #3a1f1d; --warn: #f0c674; --warn-bg: #352b16; --ok: #9fd3a8;
+    --drop: #1f2a35; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #171716; --surface: #21211f; --text: #e9e9e4; --muted: #a0a09a; --line: #3a3a36;
+  --accent: #8fb6dd; --accent-text: #10202f; --err: #f2b8b5; --err-bg: #3a1f1d; --warn: #f0c674; --warn-bg: #352b16; --ok: #9fd3a8;
+  --drop: #1f2a35; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text);
+  font: 15px/1.6 system-ui, -apple-system, "Segoe UI", "Hiragino Sans", "Yu Gothic UI", "Noto Sans JP", sans-serif; }
+main { max-width: 960px; margin: 0 auto; padding: 32px 16px 64px; }
+header h1 { font-size: 22px; margin: 0 0 4px; letter-spacing: .02em; }
+header p { margin: 0 0 24px; color: var(--muted); }
+section.card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 18px 20px; margin-bottom: 16px; }
+section.card.over { background: var(--drop); border-color: var(--accent); }
+.card h2 { font-size: 16px; margin: 0 0 10px; display: flex; gap: 10px; align-items: baseline; }
+.card h2 .step { font: 600 12px/1 ui-monospace, monospace; color: var(--accent); border: 1px solid currentColor; border-radius: 4px; padding: 3px 6px; }
+.card h2 .sub { font-weight: 400; color: var(--muted); font-size: 13px; }
+.muted { color: var(--muted); }
+.ok { color: var(--ok); }
+.err { color: var(--err); }
+code, .mono, pre { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 13px; }
+.row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+button, .filebtn { font: inherit; font-size: 14px; border-radius: 6px; padding: 7px 14px; cursor: pointer;
+  border: 1px solid var(--line); background: var(--surface); color: var(--text); }
+button:hover, .filebtn:hover { border-color: var(--accent); }
+button.primary { background: var(--accent); color: var(--accent-text); border-color: var(--accent); font-weight: 600; padding: 9px 20px; }
+button:disabled { opacity: .45; cursor: not-allowed; }
+button.ghost { background: transparent; }
+button.small { font-size: 13px; padding: 4px 10px; }
+button.icon { padding: 2px 8px; font-size: 14px; line-height: 1.4; }
+.filebtn input { display: none; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+input[type=text], input[type=date], input[type=time], input[type=number], select {
+  font: inherit; font-size: 14px; color: var(--text); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; width: 100%; min-width: 0; }
+dl.kv { display: grid; grid-template-columns: max-content 1fr; gap: 4px 16px; margin: 0 0 10px; }
+dl.kv dt { color: var(--muted); }
+dl.kv dd { margin: 0; overflow-wrap: anywhere; }
+#fileList { list-style: none; margin: 10px 0 0; padding: 0; border: 1px dashed var(--line); border-radius: 8px; }
+#fileList li { display: flex; gap: 10px; align-items: center; padding: 6px 10px; border-bottom: 1px solid var(--line); }
+#fileList li:last-child { border-bottom: 0; }
+#fileList .fname { flex: 1; overflow-wrap: anywhere; }
+#fileList .size { font-variant-numeric: tabular-nums; }
+.tag { font-size: 11px; padding: 1px 6px; border-radius: 4px; }
+.tag.warn { background: var(--warn-bg); color: var(--warn); }
+.scroll { overflow-x: auto; }
+table.pages { width: 100%; border-collapse: collapse; }
+table.pages th { text-align: left; font-weight: 500; color: var(--muted); font-size: 13px; padding: 4px 6px; border-bottom: 1px solid var(--line); }
+table.pages td { padding: 6px; vertical-align: middle; border-bottom: 1px solid var(--line); }
+table.pages td.num { width: 2em; color: var(--muted); text-align: right; font-variant-numeric: tabular-nums; }
+table.pages td.ops { white-space: nowrap; width: 1%; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px 16px; }
+.grid label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--muted); }
+.grid label .pair { display: flex; gap: 6px; }
+fieldset { border: 0; padding: 0; margin: 14px 0 0; }
+fieldset legend { font-size: 13px; color: var(--muted); padding: 0; margin-bottom: 4px; }
+fieldset label { display: flex; gap: 8px; align-items: baseline; margin: 2px 0; }
+ul.errors, ul.warnings { margin: 0 0 10px; padding: 8px 12px 8px 28px; border-radius: 8px; }
+ul.errors { background: var(--err-bg); color: var(--err); }
+ul.warnings { background: var(--warn-bg); color: var(--warn); }
+#buildStatus { margin-top: 10px; min-height: 1.6em; overflow-wrap: anywhere; }
+details summary { cursor: pointer; font-weight: 600; }
+table.data { border-collapse: collapse; font-size: 12px; }
+table.data th, table.data td { border: 1px solid var(--line); padding: 2px 6px; white-space: nowrap; text-align: left; }
+pre { background: var(--bg); padding: 8px; border-radius: 6px; overflow-x: auto; }
+ul.plain { list-style: none; padding: 0; white-space: pre; overflow-x: auto; }
+h4 { margin: 16px 0 6px; font-size: 13px; }
+@media (max-width: 640px) {
+  table.pages thead { display: none; }
+  table.pages tr { display: grid; grid-template-columns: 2em 1fr; gap: 4px 6px; padding: 8px 0; border-bottom: 1px solid var(--line); }
+  table.pages td { border: 0; padding: 0; }
+  table.pages td:not(.num) { grid-column: 2; }
+}
+</style>
+</head>
+<body>
+<main>
+<header>
+  <h1>WebClass 教材パッケージ作成</h1>
+  <p>HTML / PDF から、WebClass の教材（Textbook 型）として取り込める zip を作ります。処理はすべてこのブラウザの中で行い、ファイルは外部に送信しません。</p>
+</header>
+
+<section class="card" id="tplCard">
+  <h2><span class="step">1</span>雛形 <span class="sub">WebClass から一度エクスポートした教材の zip</span></h2>
+  <p class="muted" style="margin-top:0">授業 ID・作成者 ID・列の構成をここから引き継ぎます。一度読み込むとこのブラウザに記憶されます。</p>
+  <div id="tplInfo"></div>
+  <div id="tplMsg"></div>
+  <div class="row"><label class="filebtn">雛形 zip を選択<input type="file" id="tplInput" accept=".zip"></label><span id="tplClear"></span></div>
+</section>
+
+<section class="card" id="filesCard">
+  <h2><span class="step">2</span>教材ファイル <span class="sub">HTML・PDF をまとめてドロップ</span></h2>
+  <div class="row">
+    <label class="filebtn">ファイルを選択<input type="file" id="fileInput" multiple accept=".html,.htm,.pdf"></label>
+    <span class="muted">例: W02-slides.html / W02-slides.pdf / W02-intro.html / W02-intro.pdf / W02-homework.html …</span>
+  </div>
+  <ul id="fileList"></ul>
+</section>
+
+<section class="card">
+  <h2><span class="step">3</span>ページ構成</h2>
+  <div class="scroll">
+    <table class="pages">
+      <thead><tr><th></th><th>見出し</th><th>本文として表示</th><th>添付（ダウンロード用）</th><th></th></tr></thead>
+      <tbody id="pageRows"></tbody>
+    </table>
+  </div>
+  <div class="row" style="margin-top:10px">
+    <button id="addPage" class="small">ページを追加</button>
+    <button id="regroup" class="small ghost">ファイル名から構成し直す</button>
+  </div>
+</section>
+
+<section class="card">
+  <h2><span class="step">4</span>設定</h2>
+  <div class="grid">
+    <label>教材名<input type="text" id="title" value="講義資料"></label>
+    <label>フォルダ名（空欄ならフォルダを作らない）<input type="text" id="folder"></label>
+    <label>フォルダの並び順<input type="number" id="folderOrder"></label>
+    <label>公開開始（JST）<span class="pair"><input type="date" id="startDate"><input type="time" id="startTime" value="00:00"></span></label>
+    <label>公開終了（JST）<span class="pair"><input type="date" id="endDate"><input type="time" id="endTime" value="23:59"></span></label>
+    <label>保存するファイル名<input type="text" id="outName" value="webclass.zip"></label>
+  </div>
+  <fieldset>
+    <legend>形式</legend>
+    <label><input type="radio" name="mode" value="full" checked> 完全形式（エクスポートと同じ構造：内部テーブル＋contents/）</label>
+    <label><input type="radio" name="mode" value="csv"> CSV 形式（textbook.csv とファイルのみ）</label>
+  </fieldset>
+</section>
+
+<section class="card">
+  <h2><span class="step">5</span>チェックと生成</h2>
+  <div id="issues"></div>
+  <button id="build" class="primary">zip を生成して保存</button>
+  <div id="buildStatus"></div>
+</section>
+
+<section class="card">
+  <details>
+    <summary>zip の中身を確認する</summary>
+    <p class="muted">エクスポートした zip や生成した zip を選ぶと、内部テーブルをデコードして表示します。</p>
+    <label class="filebtn">zip を選択<input type="file" id="inspectInput" accept=".zip"></label>
+    <div id="inspectOut"></div>
+  </details>
+</section>
+</main>
+<script>
+/*__APP__*/
+</script>
+</body>
+</html>

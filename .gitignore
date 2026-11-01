@@ -1,0 +1,4 @@
+node_modules/
+dist/
+# WebClass からのエクスポートや生成物（授業 ID・教材本体を含むのでコミットしない）
+*.zip
