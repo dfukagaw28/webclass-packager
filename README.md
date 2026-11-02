@@ -79,3 +79,7 @@ build.mjs        esbuild でバンドルし単体 HTML を出力
 テストは授業データを含まない合成の雛形で行う。WebClass のエクスポート zip は授業 ID 等を含むため `.gitignore` で除外している。
 
 GitHub Actions（`.github/workflows/build.yml`）で push / PR ごとにチェックし、ビルドした HTML を成果物として保存する。`v*` タグを push すると Release に HTML を添付する。main への push では GitHub Pages（https://dfukagaw28.github.io/webclass-packager/ ）にも公開する。
+
+## 商標・免責
+
+WebClass は日本データパシフィック株式会社の登録商標です。このツールは非公式のもので、日本データパシフィック株式会社とは関係ありません。このツールについて同社へ問い合わせないでください。
