@@ -1,6 +1,6 @@
 {
   "name": "webclass-packager",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "description": "HTML/PDF から WebClass 教材（Textbook 型）インポート用 zip を作る単体 HTML ツール",
   "type": "module",
