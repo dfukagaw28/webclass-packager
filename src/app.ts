@@ -42,6 +42,7 @@ function settings(): Settings {
     start: `${$<HTMLInputElement>("#startDate").value}T${$<HTMLInputElement>("#startTime").value || "00:00"}`,
     end: `${$<HTMLInputElement>("#endDate").value}T${$<HTMLInputElement>("#endTime").value || "23:59"}:59`,
     mode: ($<HTMLInputElement>('input[name="mode"]:checked')?.value as "full" | "csv") ?? "full",
+    dummyGroup: $<HTMLInputElement>("#dummyGroup").checked,
   };
 }
 
@@ -257,6 +258,7 @@ function init() {
   for (const id of ["title", "folder", "folderOrder", "startDate", "startTime", "endDate", "endTime", "outName"]) {
     $("#" + id).addEventListener("input", () => { touched.add(id); renderIssues(); });
   }
+  $("#dummyGroup").addEventListener("change", renderIssues);
   document.querySelectorAll('input[name="mode"]').forEach((r) => r.addEventListener("change", renderIssues));
   $("#build").addEventListener("click", doBuild);
   $<HTMLInputElement>("#inspectInput").addEventListener("change", (e) => { const f = (e.target as HTMLInputElement).files?.[0]; if (f) inspectZip(f); });

@@ -184,3 +184,16 @@ test("zip の書き出しと読み込みが往復で一致する（圧縮・非�
   assert.deepEqual(files.get("bin/random.dat"), rnd);
   assert.equal(files.get("empty.txt")!.length, 0);
 });
+
+test("dummyGroup: 授業 ID を実在しない値に置き換える（作成者 ID はそのまま）", async () => {
+  const tpl = await readTemplate(await fakeExport());
+  const files: Files = new Map([["W02-slides.pdf", enc.encode("%PDF-1.4")]]);
+  const { blob } = await buildZip(tpl, files, guessPages([...files.keys()]).pages, settings({ dummyGroup: true }));
+  const { files: out } = await unzip(blob);
+  const dummy = "9".repeat(GROUP.length);
+  const cn = tbl(out, "contents_name.tbl").rows[0];
+  assert.equal(cn.group_id, dummy);
+  assert.equal(cn.auther_id, AUTHOR);
+  assert.equal(tbl(out, "control.tbl").rows[0].group_id, dummy);
+  assert.equal(tbl(out, "content_folder.tbl").rows[0].group_id, dummy);
+});

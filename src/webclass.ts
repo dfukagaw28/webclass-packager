@@ -81,7 +81,12 @@ export interface Settings {
   start: string;   // "YYYY-MM-DDTHH:MM"（JST として解釈）
   end: string;
   mode: "full" | "csv";
+  /** 授業 ID（group_id）をダミーにする。同じ科目へ戻すときの「同じ ID」警告を避ける */
+  dummyGroup?: boolean;
 }
+
+/** 実在しない授業 ID。桁数は雛形に合わせ、すべて 9 にする */
+export const dummyGroupId = (real: string) => "9".repeat(Math.max(real.length, 1));
 export type Files = Map<string, Uint8Array>;
 
 /** "YYYY-MM-DDTHH:MM[:SS]" を JST として UNIX 秒へ */
@@ -158,7 +163,7 @@ export async function buildZip(
   const cid = newId();
   const tcn = tpl["contents_name.tbl"];
   const base = { ...tcn.rows[0] };
-  const groupId = base.group_id ?? "";
+  const groupId = s.dummyGroup ? dummyGroupId(base.group_id ?? "") : base.group_id ?? "";
   const authorId = base.auther_id ?? "";
 
   const tb: Record<string, string>[] = [];
@@ -212,6 +217,7 @@ export async function buildZip(
       ...base,
       contents_id: cid,
       contents_name: s.title,
+      group_id: groupId,
       start_date: String(jstEpoch(s.start)),
       end_date: String(jstEpoch(s.end)),
       updated: now,
