@@ -29,3 +29,30 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: gh release create "$GITHUB_REF_NAME" dist/webclass-packager.html --generate-notes
+      - name: Prepare Pages
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          mkdir -p _site
+          cp dist/webclass-packager.html _site/index.html
+          cp dist/webclass-packager.html _site/webclass-packager.html
+      - uses: actions/upload-pages-artifact@v5
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        with:
+          path: _site
+
+  deploy:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    concurrency:
+      group: pages
+      cancel-in-progress: false
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5

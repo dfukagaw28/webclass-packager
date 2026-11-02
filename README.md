@@ -76,4 +76,4 @@ build.mjs        esbuild でバンドルし単体 HTML を出力
 
 テストは授業データを含まない合成の雛形で行う。WebClass のエクスポート zip は授業 ID 等を含むため `.gitignore` で除外している。
 
-GitHub Actions（`.github/workflows/build.yml`）で push / PR ごとにチェックし、ビルドした HTML を成果物として保存する。`v*` タグを push すると Release に HTML を添付する。
+GitHub Actions（`.github/workflows/build.yml`）で push / PR ごとにチェックし、ビルドした HTML を成果物として保存する。`v*` タグを push すると Release に HTML を添付する。main への push では GitHub Pages（https://dfukagaw28.github.io/webclass-packager/ ）にも公開する。
