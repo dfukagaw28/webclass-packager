@@ -2,6 +2,8 @@
 
 HTML / PDF の講義資料から、WebClass の教材（Textbook 型）として取り込める zip を作る**単体 HTML ツール**。
 
+**公開版: https://dfukagaw28.github.io/webclass-packager/** （ブラウザで開けばそのまま使える）
+
 - 配布物は `dist/webclass-packager.html` の 1 ファイルだけ。ダブルクリックしてブラウザで開けば使える
 - 処理はすべてブラウザ内で完結し、ファイルを外部へ送信しない。外部ライブラリ・ネット接続も不要
 - zip の読み書きはブラウザ標準の `CompressionStream` / `DecompressionStream`（deflate-raw）で実装
