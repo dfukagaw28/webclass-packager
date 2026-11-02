@@ -1,4 +1,5 @@
 import { readZip } from "./zip";
+import { Config, parseConfig, toYaml } from "./config";
 import {
   B64_TABLES, Files, Page, Settings, Tables, baseName, buildZip, decodeTable, guessPages, readTemplate, validate,
 } from "./webclass";
@@ -91,10 +92,17 @@ function renderTemplate() {
 async function addFiles(list: FileList | File[]) {
   const arr = [...list];
   const zips = arr.filter((f) => /\.zip$/i.test(f.name));
-  const others = arr.filter((f) => !/\.zip$/i.test(f.name));
-  if (zips.length && !others.length && !template) { await loadTemplate(zips[0]); return; }
+  const ymls = arr.filter((f) => /\.ya?ml$/i.test(f.name));
+  const others = arr.filter((f) => !/\.(zip|ya?ml)$/i.test(f.name));
+  if (zips.length && !others.length && !ymls.length && !template) { await loadTemplate(zips[0]); return; }
   for (const f of others) files.set(f.name, new Uint8Array(await f.arrayBuffer()));
   if (others.length) regroup(pages.length === 0);
+  if (ymls.length) {
+    $<HTMLTextAreaElement>("#yamlText").value = await ymls[0].text();
+    $<HTMLDetailsElement>("#yamlBox").open = true;
+    applyYaml(); // 中で render する
+    return;
+  }
   render();
 }
 
@@ -125,6 +133,58 @@ function renderFiles() {
       h("button", { class: "icon", title: "取り除く", "aria-label": `${name} を取り除く`, onclick: () => { files.delete(name); pages = pages.map((p) => ({ ...p, file: p.file === name ? "" : p.file, attach: p.attach === name ? "" : p.attach })); render(); } }, "×"),
     ));
   }
+}
+
+// ---------------------------------------------------------------------------
+// YAML での指定
+function setField(id: string, v: string) {
+  $<HTMLInputElement>("#" + id).value = v;
+  touched.add(id);
+}
+
+function applyConfig(c: Config) {
+  if (c.title !== undefined) setField("title", c.title);
+  if (c.folder !== undefined) setField("folder", c.folder);
+  if (c.folderOrder !== undefined) setField("folderOrder", c.folderOrder);
+  if (c.start) { setField("startDate", c.start.date); setField("startTime", c.start.time); }
+  if (c.end) { setField("endDate", c.end.date); setField("endTime", c.end.time); }
+  if (c.output !== undefined) setField("outName", c.output);
+  if (c.mode) $<HTMLInputElement>(`input[name="mode"][value="${c.mode}"]`).checked = true;
+  if (c.dummyGroup !== undefined) $<HTMLInputElement>("#dummyGroup").checked = c.dummyGroup;
+  if (c.pages) pages = c.pages;
+}
+
+function applyYaml() {
+  const msg = $("#yamlMsg");
+  try {
+    const c = parseConfig($<HTMLTextAreaElement>("#yamlText").value);
+    applyConfig(c);
+    const n = Object.keys(c).length;
+    msg.replaceChildren(h("p", { class: "ok" }, n ? `${n} 項目を反映しました${c.pages ? `（ページ ${c.pages.length} 件）` : ""}。` : "反映する項目がありませんでした。"));
+  } catch (e: any) {
+    msg.replaceChildren(h("p", { class: "err" }, e.message ?? String(e)));
+  }
+  render();
+}
+
+function formYaml(): string {
+  const v = (id: string) => $<HTMLInputElement>("#" + id).value;
+  const s = settings();
+  return toYaml({
+    title: s.title, folder: s.folder, folderOrder: s.folderOrder,
+    start: { date: v("startDate"), time: v("startTime") || "00:00" },
+    end: { date: v("endDate"), time: v("endTime") || "23:59" },
+    mode: s.mode, dummyGroup: !!s.dummyGroup, output: v("outName"), pages,
+  });
+}
+
+function saveYaml() {
+  const text = $<HTMLTextAreaElement>("#yamlText").value || formYaml();
+  const name = ($<HTMLInputElement>("#outName").value.trim() || "webclass.zip").replace(/\.zip$/i, "") + ".yml";
+  const a = h("a", { href: URL.createObjectURL(new Blob([text], { type: "text/yaml" })), download: name });
+  document.body.append(a);
+  a.click();
+  a.remove();
 }
 
 // ---------------------------------------------------------------------------
@@ -261,6 +321,9 @@ function init() {
   $("#dummyGroup").addEventListener("change", renderIssues);
   document.querySelectorAll('input[name="mode"]').forEach((r) => r.addEventListener("change", renderIssues));
   $("#build").addEventListener("click", doBuild);
+  $("#yamlApply").addEventListener("click", applyYaml);
+  $("#yamlFromForm").addEventListener("click", () => { $<HTMLTextAreaElement>("#yamlText").value = formYaml(); $("#yamlMsg").replaceChildren(); });
+  $("#yamlSave").addEventListener("click", saveYaml);
   $<HTMLInputElement>("#inspectInput").addEventListener("change", (e) => { const f = (e.target as HTMLInputElement).files?.[0]; if (f) inspectZip(f); });
   // ページ外へのドロップでファイルが開かれてしまうのを防ぐ
   window.addEventListener("dragover", (e) => e.preventDefault());

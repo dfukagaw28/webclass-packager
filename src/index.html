@@ -50,8 +50,10 @@ button.small { font-size: 13px; padding: 4px 10px; }
 button.icon { padding: 2px 8px; font-size: 14px; line-height: 1.4; }
 .filebtn input { display: none; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-input[type=text], input[type=date], input[type=time], input[type=number], select {
+input[type=text], input[type=date], input[type=time], input[type=number], select, textarea {
   font: inherit; font-size: 14px; color: var(--text); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; width: 100%; min-width: 0; }
+textarea { display: block; margin: 8px 0 10px; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 13px; line-height: 1.5; resize: vertical; }
+#yamlMsg { margin-top: 8px; }
 dl.kv { display: grid; grid-template-columns: max-content 1fr; gap: 4px 16px; margin: 0 0 10px; }
 dl.kv dt { color: var(--muted); }
 dl.kv dd { margin: 0; overflow-wrap: anywhere; }
@@ -111,10 +113,32 @@ h4 { margin: 16px 0 6px; font-size: 13px; }
 <section class="card" id="filesCard">
   <h2><span class="step">2</span>教材ファイル <span class="sub">HTML・PDF をまとめてドロップ</span></h2>
   <div class="row">
-    <label class="filebtn">ファイルを選択<input type="file" id="fileInput" multiple accept=".html,.htm,.pdf"></label>
+    <label class="filebtn">ファイルを選択<input type="file" id="fileInput" multiple accept=".html,.htm,.pdf,.yml,.yaml"></label>
     <span class="muted">例: W02-slides.html / W02-slides.pdf / W02-intro.html / W02-intro.pdf / W02-homework.html …</span>
   </div>
   <ul id="fileList"></ul>
+</section>
+
+<section class="card">
+  <details id="yamlBox">
+    <summary>ページ構成と設定を YAML で指定する（任意）</summary>
+    <p class="muted">書いた項目だけが画面に反映されます。<code>.yml</code> / <code>.yaml</code> を教材ファイルと一緒にドロップしても読み込みます。</p>
+    <textarea id="yamlText" rows="14" spellcheck="false" aria-label="YAML" placeholder="title: 講義資料02
+folder: 第 2 回
+start: 2026-10-02 09:00
+end: 2027-03-31 23:59
+pages:
+  - heading: スライド
+    file: W02-slides.html
+    attach: W02-slides.pdf
+  - W02-homework.pdf"></textarea>
+    <div class="row">
+      <button id="yamlApply" class="small">画面に反映</button>
+      <button id="yamlFromForm" class="small ghost">画面の内容から作る</button>
+      <button id="yamlSave" class="small ghost">.yml として保存</button>
+    </div>
+    <div id="yamlMsg"></div>
+  </details>
 </section>
 
 <section class="card">

@@ -26,6 +26,30 @@ HTML / PDF の講義資料から、WebClass の教材（Textbook 型）として
 | `homework-sheet` など `…sheet` | 提出課題　解答用紙 | 4 |
 | それ以外 | ファイル名 | 末尾 |
 
+### YAML で指定する
+
+ページ構成と設定は YAML でも指定できる。画面の「ページ構成と設定を YAML で指定する」に書いて「画面に反映」するか、`.yml` / `.yaml` を教材ファイルと一緒にドロップする。書いた項目だけが反映され、残りは画面の値のまま。「画面の内容から作る」で今の状態を YAML にでき、`.yml` として保存して次回に使い回せる。
+
+```yaml
+title: 講義資料02
+folder: 第 2 回          # 空ならフォルダを作らない
+folder_order: 9
+start: 2026-10-02 09:00  # JST。時刻を省くと start は 00:00、end は 23:59
+end: 2027-03-31
+mode: full               # full / csv
+dummy_group: true        # 授業 ID をダミーにする
+output: W02-webclass.zip
+pages:
+  - heading: スライド
+    file: W02-slides.html
+    attach: W02-slides.pdf
+  - heading: 提出課題
+    file: W02-homework.pdf
+  - W02-intro.html       # ファイル名だけなら見出しはファイル名から推定
+```
+
+使えるのは上の書き方（項目名: 値、`pages` の下に `-` で並べるリスト、`#` コメント、引用符）だけで、YAML の機能をすべて解釈するわけではない。
+
 同じ名前の `.html` と `.pdf` があれば、HTML を本文・PDF を添付にする。PDF だけなら PDF を本文と添付の両方にする。
 `Wnn` から教材名（`講義資料nn`）・フォルダ名（`第 n 回`）・保存ファイル名の既定値を決める。
 
@@ -69,10 +93,12 @@ npm test           # node:test によるテスト（ブラウザ不要）
 src/
   index.html     画面（CSS 込み）。ビルド時に /*__APP__*/ の位置へ JS を埋め込む
   app.ts         画面の処理
+  config.ts      構成の YAML 読み書き（DOM 非依存）
   webclass.ts    エクスポート形式の読み書き・検証・生成（DOM 非依存）
   zip.ts         依存なしの zip 読み書き
 test/
   webclass.test.ts
+  config.test.ts
 build.mjs        esbuild でバンドルし単体 HTML を出力
 ```
 
